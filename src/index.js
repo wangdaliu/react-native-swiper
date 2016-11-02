@@ -118,7 +118,8 @@ export default class extends Component {
     autoplayTimeout: PropTypes.number,
     autoplayDirection: PropTypes.bool,
     index: PropTypes.number,
-    renderPagination: PropTypes.func
+    renderPagination: PropTypes.func,
+    contentOffset: PropTypes.number,
   }
 
   /**
@@ -128,7 +129,6 @@ export default class extends Component {
    */
   static defaultProps = {
     horizontal: true,
-    pagingEnabled: true,
     showsHorizontalScrollIndicator: false,
     showsVerticalScrollIndicator: false,
     bounces: false,
@@ -143,7 +143,8 @@ export default class extends Component {
     autoplay: false,
     autoplayTimeout: 2.5,
     autoplayDirection: true,
-    index: 0
+    index: 0,
+    contentOffset: 0,
   }
 
   /**
@@ -181,7 +182,8 @@ export default class extends Component {
 
     const initState = {
       autoplayEnd: false,
-      loopJump: false
+      loopJump: false,
+      pagingEnabled: true
     }
 
     const newInternals = {
@@ -320,6 +322,8 @@ export default class extends Component {
    * @param  {string} dir    'x' || 'y'
    */
   updateIndex = (offset, dir, cb) => {
+
+    console.log('updateIndex');
     const state = this.state
     let index = state.index
     const diff = offset[dir] - this.internals.offset[dir]
@@ -394,7 +398,6 @@ export default class extends Component {
     } else {
       this.refs.scrollView && this.refs.scrollView.scrollTo({ x, y, animated })
     }
-
     // update scroll state
     this.internals.isScrolling = true
     this.setState({
@@ -541,13 +544,15 @@ export default class extends Component {
   }
 
   renderScrollView = pages => {
+    const offset = this.state.offset.x && {x: this.state.offset.x - this.props.contentOffset} || {}
     if (Platform.OS === 'ios') {
       return (
         <ScrollView ref='scrollView'
           {...this.props}
           {...this.scrollViewPropOverrides()}
+          pagingEnabled = {this.state.pagingEnabled}
           contentContainerStyle={[styles.wrapper, this.props.style]}
-          contentOffset={this.state.offset}
+          contentOffset={offset}
           onScrollBeginDrag={this.onScrollBegin}
           onMomentumScrollEnd={this.onScrollEnd}
           onScrollEndDrag={this.onScrollEndDrag}>
